@@ -1,42 +1,41 @@
 package co.whiteboarddynamics.demo.kbin.api
 
-import co.whiteboarddynamics.demo.kbin.models.TrendingPaste
+import co.whiteboarddynamics.demo.kbin.models.Paste
 import com.google.gson.GsonBuilder
 import io.reactivex.Observable
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.POST
-import retrofit2.http.Query
+import retrofit2.http.GET
 
-interface PastebinAPI {
-    @POST("api_post.php?api_option=trends")
-    fun postTrending(@Query("api_dev_key") apiKey: String): Observable<Array<TrendingPaste>>
+interface PasteAPI {
+  @GET("pastes?perpage=25")
+  fun postTrending(): Observable<Paste>
 
-    companion object {
-        const val END_POINT = "https://pastebin.com/api/"
+  companion object {
+    const val END_POINT = "https://api.paste.ee/v1/"
 
-        fun create(): PastebinAPI {
-            val gson = GsonBuilder()
-                    .create()
+    fun create(apiKey: String): PasteAPI {
+      val gson = GsonBuilder().create()
 
-            val client = OkHttpClient.Builder().addInterceptor { chain ->
-                val newRequest = chain.request()
-                        .newBuilder()
-                        .addHeader("Accept", "application/json")
-                        .build()
-                chain.proceed(newRequest)
-            }.build()
+      val client = OkHttpClient.Builder().addInterceptor { chain ->
+        val newRequest = chain.request()
+              .newBuilder()
+              .addHeader("Accept", "application/json")
+              .addHeader("X-Auth-Token", apiKey)
+              .build()
+        chain.proceed(newRequest)
+      }.build()
 
-            val retrofit = Retrofit.Builder()
-                    .client(client)
-                    .baseUrl(PastebinAPI.END_POINT)
-                    .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                    .addConverterFactory(GsonConverterFactory.create(gson))
-                    .build()
+      val retrofit = Retrofit.Builder()
+          .client(client)
+          .baseUrl(PasteAPI.END_POINT)
+          .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+          .addConverterFactory(GsonConverterFactory.create(gson))
+          .build()
 
-            return retrofit.create(PastebinAPI::class.java)
-        }
+      return retrofit.create(PasteAPI::class.java)
     }
+  }
 }

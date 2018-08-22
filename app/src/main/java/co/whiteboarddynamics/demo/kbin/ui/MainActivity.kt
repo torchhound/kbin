@@ -5,43 +5,54 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.RecyclerView
 import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
-import co.whiteboarddynamics.demo.kbin.BuildConfig
+import android.widget.Toast
 import co.whiteboarddynamics.demo.kbin.R
-import co.whiteboarddynamics.demo.kbin.api.PastebinAPI
-import co.whiteboarddynamics.demo.kbin.models.TrendingPaste
-import io.reactivex.Observable
+import co.whiteboarddynamics.demo.kbin.api.PasteAPI
+import co.whiteboarddynamics.demo.kbin.models.Paste
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
+  private lateinit var allPastesRecyclerView : RecyclerView
+  private lateinit var viewAdapter : RecyclerView.Adapter<*>
+  private lateinit var viewManager : RecyclerView.LayoutManager
+  private lateinit var pasteAPI : PasteAPI
+  private lateinit var pasteList : Paste
 
-    private lateinit var trendingRecyclerView : RecyclerView
-    private lateinit var viewAdapter : RecyclerView.Adapter<*>
-    private lateinit var viewManager : RecyclerView.LayoutManager
-    private val pastebinAPI : PastebinAPI = PastebinAPI.create()
+  init {
+    instance = this
+  }
 
-    init {
-        instance = this
+  companion object {
+    private var instance: MainActivity? = null
+
+    fun applicationContext() : Context {
+      return instance!!.applicationContext
     }
+  }
 
-    companion object {
-        private var instance: MainActivity? = null
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    setContentView(R.layout.activity_main)
 
-        fun applicationContext() : Context {
-            return instance!!.applicationContext
+    pasteAPI = PasteAPI.create(resources.getString(R.string.PasteApiKey))
+    viewManager = LinearLayoutManager(this)
+    pasteAPI.postTrending().observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io()).subscribe(
+      { it ->
+        pasteList = it
+      }, {
+        Toast.makeText(MainActivity.applicationContext(), "Error: $it", Toast.LENGTH_LONG).show()
+      }, {
+        Toast.makeText(MainActivity.applicationContext(), "Loaded All Pastes!", Toast.LENGTH_SHORT).show()
+        viewAdapter = AllPastesAdapter(pasteList)
+
+        allPastesRecyclerView = all_pastes_recycler_view.apply {
+          setHasFixedSize(true)
+          layoutManager = viewManager
+          adapter = viewAdapter
         }
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
-        viewManager = LinearLayoutManager(this)
-        val trendingPastes : Observable<Array<TrendingPaste>> = pastebinAPI.postTrending(BuildConfig.PastebinApiKey)
-        viewAdapter = TrendingAdapter(trendingPastes)
-
-        trendingRecyclerView = trending_recycler_view.apply {
-            layoutManager = viewManager
-            adapter = viewAdapter
-        }
-    }
+      }
+    )
+  }
 }
