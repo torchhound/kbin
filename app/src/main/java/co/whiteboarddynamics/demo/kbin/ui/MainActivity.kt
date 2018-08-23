@@ -17,7 +17,6 @@ class MainActivity : AppCompatActivity() {
   private lateinit var allPastesRecyclerView : RecyclerView
   private lateinit var viewAdapter : RecyclerView.Adapter<*>
   private lateinit var viewManager : RecyclerView.LayoutManager
-  private lateinit var pasteAPI : PasteAPI
   private lateinit var pasteList : Paste
 
   init {
@@ -26,9 +25,14 @@ class MainActivity : AppCompatActivity() {
 
   companion object {
     private var instance: MainActivity? = null
+    private lateinit var pasteAPI : PasteAPI
 
     fun applicationContext() : Context {
       return instance!!.applicationContext
+    }
+
+    fun getApi() : PasteAPI {
+      return pasteAPI
     }
   }
 
@@ -36,9 +40,13 @@ class MainActivity : AppCompatActivity() {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_main)
 
+    fab.setOnClickListener { _ ->
+      NewPasteDialog.show(this)
+    }
+
     pasteAPI = PasteAPI.create(resources.getString(R.string.PasteApiKey))
     viewManager = LinearLayoutManager(this)
-    pasteAPI.postTrending().observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io()).subscribe(
+    pasteAPI.getAll().observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io()).subscribe(
       { it ->
         pasteList = it
       }, {

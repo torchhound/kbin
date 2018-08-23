@@ -1,5 +1,7 @@
 package co.whiteboarddynamics.demo.kbin.api
 
+import co.whiteboarddynamics.demo.kbin.models.NewPaste
+import co.whiteboarddynamics.demo.kbin.models.NewPasteResponse
 import co.whiteboarddynamics.demo.kbin.models.Paste
 import com.google.gson.GsonBuilder
 import io.reactivex.Observable
@@ -7,11 +9,16 @@ import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.POST
 
 interface PasteAPI {
   @GET("pastes?perpage=25")
-  fun postTrending(): Observable<Paste>
+  fun getAll(): Observable<Paste>
+
+  @POST("pastes")
+  fun postNew(@Body newPaste: NewPaste): Observable<NewPasteResponse>
 
   companion object {
     const val END_POINT = "https://api.paste.ee/v1/"
