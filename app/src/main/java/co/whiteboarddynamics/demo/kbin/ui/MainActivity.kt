@@ -40,27 +40,38 @@ class MainActivity : AppCompatActivity() {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_main)
 
+    supportActionBar?.title = "kbin: Paste.ee client"
+
     fab.setOnClickListener { _ ->
       NewPasteDialog.show(this)
     }
 
+    main_swipe_refresh_layout.setOnRefreshListener {
+      getAllPastes()
+    }
+
     pasteAPI = PasteAPI.create(resources.getString(R.string.PasteApiKey))
     viewManager = LinearLayoutManager(this)
-    pasteAPI.getAll().observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io()).subscribe(
-      { it ->
-        pasteList = it
-      }, {
-        Toast.makeText(MainActivity.applicationContext(), "Error: $it", Toast.LENGTH_LONG).show()
-      }, {
-        Toast.makeText(MainActivity.applicationContext(), "Loaded All Pastes!", Toast.LENGTH_SHORT).show()
-        viewAdapter = AllPastesAdapter(pasteList)
+    getAllPastes()
+  }
 
-        allPastesRecyclerView = all_pastes_recycler_view.apply {
-          setHasFixedSize(true)
-          layoutManager = viewManager
-          adapter = viewAdapter
-        }
+  fun getAllPastes() {
+    pasteAPI.getAll().observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io()).subscribe(
+        { it ->
+          pasteList = it
+        }, {
+      Toast.makeText(MainActivity.applicationContext(), "Error: $it", Toast.LENGTH_LONG).show()
+    }, {
+      viewAdapter = AllPastesAdapter(pasteList)
+      main_swipe_refresh_layout.isRefreshing = false
+      Toast.makeText(MainActivity.applicationContext(), "Loaded All Pastes!", Toast.LENGTH_SHORT).show()
+
+      allPastesRecyclerView = all_pastes_recycler_view.apply {
+        setHasFixedSize(true)
+        layoutManager = viewManager
+        adapter = viewAdapter
       }
+    }
     )
   }
 }
