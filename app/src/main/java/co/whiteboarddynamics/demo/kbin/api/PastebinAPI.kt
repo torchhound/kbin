@@ -11,7 +11,7 @@ import retrofit2.http.*
 
 interface PasteAPI {
   @GET("pastes?perpage=25")
-  fun getAll(): Observable<Paste>
+  fun getAll(@Query("page") page: Int): Observable<Paste>
 
   @POST("pastes")
   fun postNew(@Body newPaste: NewPaste): Observable<NewPasteResponse>

@@ -17,8 +17,11 @@ import java.util.logging.Logger
 class MainActivity : AppCompatActivity() {
   private lateinit var allPastesRecyclerView : RecyclerView
   private lateinit var viewAdapter : RecyclerView.Adapter<*>
-  private lateinit var viewManager : RecyclerView.LayoutManager
+  private lateinit var linearLayoutManager: LinearLayoutManager
   private lateinit var pasteList : Paste
+  private val lastVisibleItemPosition: Int
+    get() = linearLayoutManager.findLastVisibleItemPosition()
+  private var allPastesPage: Int = 1
   val LOG = Logger.getLogger(this.javaClass.name)
 
   init {
@@ -49,31 +52,46 @@ class MainActivity : AppCompatActivity() {
     }
 
     main_swipe_refresh_layout.setOnRefreshListener {
-      getAllPastes()
+      getAllPastes(allPastesPage)
     }
 
     pasteAPI = PasteAPI.create(resources.getString(R.string.PasteApiKey))
-    viewManager = LinearLayoutManager(this)
-    getAllPastes()
+    linearLayoutManager = LinearLayoutManager(this)
+    getAllPastes(allPastesPage)
   }
 
-  fun getAllPastes() {
-    pasteAPI.getAll().observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io()).subscribe(
+  private fun getAllPastes(page: Int) {
+    pasteAPI.getAll(page).observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io()).subscribe(
         { it ->
-          pasteList = it
+           pasteList = it
         }, {
-      Toast.makeText(MainActivity.applicationContext(), "Error: $it", Toast.LENGTH_LONG).show()
-    }, {
-      viewAdapter = AllPastesAdapter(pasteList)
-      main_swipe_refresh_layout.isRefreshing = false
-      Toast.makeText(MainActivity.applicationContext(), "Loaded All Pastes!", Toast.LENGTH_SHORT).show()
+          Toast.makeText(MainActivity.applicationContext(), "Error: $it", Toast.LENGTH_LONG).show()
+        }, {
+          viewAdapter = AllPastesAdapter(pasteList)
+          main_swipe_refresh_layout.isRefreshing = false
+          Toast.makeText(MainActivity.applicationContext(), "Loaded All Pastes!", Toast.LENGTH_SHORT).show()
 
-      allPastesRecyclerView = all_pastes_recycler_view.apply {
-        setHasFixedSize(true)
-        layoutManager = viewManager
-        adapter = viewAdapter
-      }
-    }
+          allPastesRecyclerView = all_pastes_recycler_view.apply {
+            setHasFixedSize(true)
+            layoutManager = linearLayoutManager
+            adapter = viewAdapter
+          }
+          setRecyclerViewScrollListener()
+        }
     )
   }
+
+  private fun setRecyclerViewScrollListener() {
+    allPastesRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+      override fun onScrollStateChanged(recyclerView: RecyclerView?, newState: Int) {
+        super.onScrollStateChanged(recyclerView, newState)
+        val totalItemCount = recyclerView!!.layoutManager.itemCount
+        if (!main_swipe_refresh_layout.isRefreshing && totalItemCount == lastVisibleItemPosition + 1 && pasteList.nextPageUrl != null) {
+          allPastesPage += 1
+          getAllPastes(allPastesPage)
+        }
+      }
+    })
+  }
+
 }
