@@ -12,12 +12,14 @@ import co.whiteboarddynamics.demo.kbin.models.Paste
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
+import java.util.logging.Logger
 
 class MainActivity : AppCompatActivity() {
   private lateinit var allPastesRecyclerView : RecyclerView
   private lateinit var viewAdapter : RecyclerView.Adapter<*>
   private lateinit var viewManager : RecyclerView.LayoutManager
   private lateinit var pasteList : Paste
+  val LOG = Logger.getLogger(this.javaClass.name)
 
   init {
     instance = this

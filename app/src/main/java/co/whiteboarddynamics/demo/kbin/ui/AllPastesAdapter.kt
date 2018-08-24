@@ -6,10 +6,8 @@ import android.view.ViewGroup
 import android.widget.TextView
 import co.whiteboarddynamics.demo.kbin.R
 import co.whiteboarddynamics.demo.kbin.models.Paste
-import java.util.logging.Logger
 
 class AllPastesAdapter(private var pastes : Paste) : RecyclerView.Adapter<AllPastesAdapter.ViewHolder>() {
-  val LOG = Logger.getLogger(this.javaClass.name)
 
   class ViewHolder(val textView: TextView) : RecyclerView.ViewHolder(textView)
 
@@ -20,8 +18,7 @@ class AllPastesAdapter(private var pastes : Paste) : RecyclerView.Adapter<AllPas
   }
 
   override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-    LOG.info("$pastes.data[position]")
-    holder.textView.text = pastes.data[position].description//sections[0].name
+    holder.textView.text = pastes.data[position].description
   }
 
   override fun getItemCount(): Int {

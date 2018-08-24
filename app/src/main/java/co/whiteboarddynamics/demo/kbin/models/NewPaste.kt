@@ -3,7 +3,9 @@ package co.whiteboarddynamics.demo.kbin.models
 import com.google.gson.annotations.SerializedName
 
 data class NewPaste(
-  @SerializedName("sections") val sections: MutableList<Sections>
+  @SerializedName("sections") val sections: MutableList<Sections>,
+  @SerializedName("description") val description: String?,
+  @SerializedName("encrypted") val encrypted: Boolean?
 )
 
 data class Sections(

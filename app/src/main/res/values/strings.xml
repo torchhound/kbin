@@ -2,4 +2,6 @@
     <string name="app_name">kbin</string>
     <string name="new_paste_name">New Paste Name</string>
     <string name="paste_contents">Paste Contents</string>
+    <string name="paste_description">Paste Description</string>
+    <string name="encrypted">Encrypted</string>
 </resources>

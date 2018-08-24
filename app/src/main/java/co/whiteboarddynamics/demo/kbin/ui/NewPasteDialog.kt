@@ -28,7 +28,8 @@ class NewPasteDialog : DialogFragment() {
     val view = activity.layoutInflater.inflate(R.layout.new_paste_dialog, null)
 
     val editTextName = view.findViewById<View>(R.id.txt_paste_name) as EditText
-    val editTextContent = view.findViewById<View>(R.id.txt_content) as EditText
+    val editTextContent = view.findViewById<View>(R.id.txt_paste_content) as EditText
+    val editTextDescription = view.findViewById<View>(R.id.txt_paste_description) as EditText
 
     return AlertDialog.Builder(activity)
         .setTitle("Create a New Paste")
@@ -37,9 +38,9 @@ class NewPasteDialog : DialogFragment() {
           dialog, _ ->
           run {
             val sectionsList : MutableList<Sections> = mutableListOf()
-            val newSection = Sections(editTextName.text.toString(), null, editTextContent.text.toString())
+            val newSection = Sections(editTextName.text.toString(), "text", editTextContent.text.toString())
             sectionsList.add(newSection)
-            MainActivity.getApi().postNew(NewPaste(sectionsList)).observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io()).subscribe(
+            MainActivity.getApi().postNew(NewPaste(sectionsList, editTextDescription.text.toString(), false)).observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io()).subscribe(
                 {
                   //NewPasteResponse link?
                 },
